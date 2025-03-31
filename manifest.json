@@ -19,8 +19,7 @@
   },
   "permissions": [
     "tabs",
-    "identity",
-    "storage"
+    "identity"
   ],
   "host_permissions": [
     "https://my.ucdavis.edu/schedulebuilder/*",

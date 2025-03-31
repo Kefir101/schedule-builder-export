@@ -246,7 +246,6 @@ function createEvent(year, month, day, numWeeks, courseName, parsedName, parsedT
 		"recurrence": [
 			"RRULE:FREQ=WEEKLY;UNTIL=" + untilDate.getFullYear() + "" + endMonth + "" + endDay + ";BYDAY=" + days
 		],
-		"colorId": "6",
 		"calendarId": "003b8d0be6116692bbce45fa9f75941673d7bd7538721e6ee824da784e196e22@group.calendar.google.com"
 	};
 	return event;
