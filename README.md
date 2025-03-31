@@ -3,9 +3,9 @@
 # Description
 This extension allows you to quickly and easily import Schedule Builder schedules into Google Calendar.
 # Installation
-Add to Chrome through the Web Store <a href="https://chrome.google.com/webstore/detail/schedule-builder-export/dahicfbjacnkkdhphlloeeaadkenloaf">here</a>. 
+Add to Chrome through the Web Store <a href="https://chrome.google.com/work_in_progress">here</a>. 
 
-If you would like to contribute, you can clone this repository and upload it through <a href="chrome://extensions">chrome://extensions</a> -> Load Unpacked Extension after enabling Developer Mode. You'll also need an API key and client-id. 
+If you would like to contribute, you can clone this repository and upload it through <a href="chrome://extensions">chrome://extensions</a> -> Load Unpacked Extension after enabling Developer Mode. You'll need to make a new project in Google Cloud Platform, set up OAuth-2.0 perms, and create a client-id.  
 
 # Usage
 <b>Important:</b> You must be signed into <em>Chrome</em> (not Google) using the account you wish to use.
@@ -19,4 +19,4 @@ Click Go! and your Google Calendar will automatically be populated with your cou
 After exporting, you can change the color, title, etc. as desired directly through Google Calendar (you will only need to edit the first event in the series).
 
 
-Feel free to email akramer(at)ucdavis.edu with any questions!
+Feel free to email ksadebar (dot) ucdavis (dot) edu with any questions!  

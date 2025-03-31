@@ -7,14 +7,14 @@ var div = document.createElement("div");
 var open = false, exported = false; //Track if the popup window is open, and if exporting has been completed 
 div.className = "dropdown inline";
 var button = document.createElement("button");
-button.className = "btn btn-mini white-on-navyblue";  
+button.className = "btn btn-mini white-on-navyblue";
 button.addEventListener("click", parseAndExport);
 var text = document.createTextNode("Export!");
 button.appendChild(text);
 div.appendChild(button);
 
 var parent = document.getElementsByClassName("menu active")[0]; //parent: the element we want to insert the button as a child of
-if(!parent) { //The original page changes class depending on window size so check if the one we are trying to access is null, if so try the other one
+if (!parent) { //The original page changes class depending on window size so check if the one we are trying to access is null, if so try the other one
 	parent = document.getElementsByClassName("menu active")[1];
 }
 
@@ -30,16 +30,28 @@ popupWindow.style.textAlign = "center";
 //Parses text from Schedule Builder and exports to Google Calendar
 function parseAndExport() {
 
-	  if(!open) { //If the popup is not already open...
-	  	open = true;
-	  	if(!exported){ //And we haven't already exported
-	  		//Add the popup to the page
+	if (!open) { //If the popup is not already open...
+		open = true;
+		if (!exported) { //And we haven't already exported
+			//Add the popup to the page
 			div.appendChild(popupWindow);
-			popupWindow.innerHTML = '<h3 style="text-align:center;border-bottom:2px solid gold">Ready To Export!</h3><br><p>NOTE: You must sign in to Chrome (not Google) for the extension to work. </p><p style="text-align:left">How many weeks will your courses last?</p>' +
-				'<input type="number" value=11 id="numweeks"><br><br><p style="text-align:left">Pick the <em>Monday</em> of the week when classes begin.</p><input type="date" id="startdate">';
-			$('.dropdown-menu').css({"padding": "30px"});
-			 
-	
+			popupWindow.innerHTML = 
+			`<h3 style="text-align:center;border-bottom:2px solid gold">Ready To Export!</h3>
+			<br><p>NOTE: You must sign in to Chrome (not Google) for the extension to work.</p>
+			<p style="text-align:left">How many weeks of class?</p>
+			<input type="number" value=11 id="numweeks"><br>
+			<p style="text-align:left">Pick the first <em>Monday</em> of class.</p>
+			<input type="date" id="startdate">
+			<p style="text-align:left;">
+				(optional) Select a
+				<a href="https://docs.simplecalendar.io/find-google-calendar-id/" style="text-decoration: underline; color: blue;">
+					calendar id
+				</a>
+			</p>		
+			<input type="text" id="calendarid"><br><br>`;
+			$('.dropdown-menu').css({ "padding": "30px" });
+
+
 			var eventArray = []; //stores "events" in correct JSON format for Google Calendar requests
 			var dataArray = []; //stores parsed data from Schedule Builder
 			var TBA = false; //Some course times may be listed as TBA
@@ -50,37 +62,37 @@ function parseAndExport() {
 			var courses = courseContainer.getElementsByClassName("CourseItem"); //Element containing all courses in the schedule
 			var events, data, parsedName, parsedTime, parsedDays, parsedLocation, text;
 			var count = 0;
-			for(var i = 0; i < courses.length; i++) { //For each course listing
-				events = courses[i].getElementsByClassName("data meeting-times")[0].childNodes; 
+			for (var i = 0; i < courses.length; i++) { //For each course listing
+				events = courses[i].getElementsByClassName("data meeting-times")[0].childNodes;
 				courseName = courses[i].getElementsByClassName("classTitle")[0].textContent;
 
-			for(var j = 0; j < events.length; j++) { //For each "event" in the course (Lecture, Lab, Discussion...)
+				for (var j = 0; j < events.length; j++) { //For each "event" in the course (Lecture, Lab, Discussion...)
 					TBA = false;
 					OLA = false;
 					data = events[j].childNodes; //Contains text to parse out name, time, days, location of the event
-					var eventData = {courseName: "", eventName: "", time: "", days: "",location: ""};
+					var eventData = { courseName: "", eventName: "", time: "", days: "", location: "" };
 					eventData.courseName = courseName;
 					count = 0;
-					for(var k = 0; k < data.length; k++) {
+					for (var k = 0; k < data.length; k++) {
 						text = data[k].textContent;
-						if(text.includes("TBA")){
+						if (text.includes("TBA")) {
 							TBA = true;
 						}
-						if(text.includes("Online Learning Activity")){
+						if (text.includes("Online Learning Activity")) {
 							OLA = true;
 						}
-						if(/\S/.test(text)) { //Checks that text is not all whitespace
+						if (/\S/.test(text)) { //Checks that text is not all whitespace
 							//Store parsed data
-							if(count == 0) {
+							if (count == 0) {
 								eventData.eventName = text;
 							}
-							else if(count == 1) {
-								eventData.time = text; 
+							else if (count == 1) {
+								eventData.time = text;
 							}
-							else if(count == 2) {
+							else if (count == 2) {
 								eventData.days = text;
 							}
-							else if(count == 3) {
+							else if (count == 3) {
 								eventData.location = text;
 							}
 							else {
@@ -89,54 +101,61 @@ function parseAndExport() {
 							count++;
 						}
 					}
-					if(!TBA && !OLA) {
+					if (!TBA && !OLA) {
 						dataArray.push(eventData);
 					}
-					else if (TBA){
+					else if (TBA) {
 						//Note that TBA courses will not be exported
-						popupWindow.innerHTML +=  '<p style="text-align:left;font-size:10px">(NOTE: ' + courseName.substr(0,10) + "... " + eventData.eventName + ' course time is TBA. Will not be exported.)</p>';
+						popupWindow.innerHTML += '<p style="text-align:left;font-size:10px">(NOTE: ' + courseName.substr(0, 10) + "... " + eventData.eventName + ' course time is TBA. Will not be exported.)</p>';
 					}
 					else if (OLA) {
 						//Note that Online Learning Activities will not be exported
-						popupWindow.innerHTML +=  '<p style="text-align:left;font-size:10px">(NOTE: ' + courseName.substr(0,10) + "... " + eventData.eventName + ' is an Online Learning Activity and does not have a course time. Will not be exported.)</p>';
+						popupWindow.innerHTML += '<p style="text-align:left;font-size:10px">(NOTE: ' + courseName.substr(0, 10) + "... " + eventData.eventName + ' is an Online Learning Activity and does not have a course time. Will not be exported.)</p>';
 					}
 				}
 
 			}
 			//Add "Go" button
 			var submit = document.createElement("button");
-				submit.className = "btn btn-mini white-on-navyblue"; 
-				submit.textContent = "Go!";
-				submit.addEventListener("click", function() {
-					var numWeeks = document.getElementById("numweeks").value;
-					var startDate = document.getElementById("startdate").value; //We can calculate the start date of each individual course given the week the quarter begins
+			submit.className = "btn btn-mini white-on-navyblue";
+			submit.textContent = "Go!";
+			submit.style.fontSize = "17px"
+			submit.style.padding = "11px"
+			submit.addEventListener("click", function () {
+				var numWeeks = document.getElementById("numweeks").value;
+				var startDate = document.getElementById("startdate").value; //We can calculate the start date of each individual course given the week the quarter begins
+				var calendarId = document.getElementById("calendarid").value;
 
-					//parse date elements
-					var date = startDate.split('-');
-					var year = date[0];
-					var month = date[1]-1; //Dates are 0-indexed
-					var day = date[2];
+				console.log(calendarId);
+				if (calendarId == "") {
+					calendarId = "primary";
+				}
 
-					for(var i = 0; i < dataArray.length; i++) {
+				//parse date elements
+				var date = startDate.split('-');
+				var year = date[0];
+				var month = date[1] - 1; //Dates are 0-indexed
+				var day = date[2];
 
-						 //create a Google Calendar "event" object using Schedule Builder data
-						 calendarEvent = createEvent(year, month, day, numWeeks, dataArray[i].courseName, dataArray[i].eventName, dataArray[i].time, dataArray[i].days, dataArray[i].location);
-						 eventArray.push(calendarEvent);
-					}
-					exportToGoogle(eventArray);
-				});
-				popupWindow.appendChild(submit);
-			}
-		  else {
-		  	div.appendChild(popupWindow);
-		  	document.innerHTML = "Calendar exported.";
-		  }
+				for (var i = 0; i < dataArray.length; i++) {
+
+					//create a Google Calendar "event" object using Schedule Builder data
+					calendarEvent = createEvent(year, month, day, numWeeks, dataArray[i].courseName, dataArray[i].eventName, dataArray[i].time, dataArray[i].days, dataArray[i].location);
+					eventArray.push(calendarEvent);
+				}
+				exportToGoogle(eventArray, calendarId);
+			});
+			popupWindow.appendChild(submit);
 		}
 		else {
-			open = false;
-			div.removeChild(popupWindow);
-
+			div.appendChild(popupWindow);
+			document.innerHTML = "Calendar exported.";
 		}
+	}
+	else {
+		open = false;
+		div.removeChild(popupWindow);
+	}
 }
 function createEvent(year, month, day, numWeeks, courseName, parsedName, parsedTime, parsedDays, parsedLocation) {
 
@@ -144,26 +163,26 @@ function createEvent(year, month, day, numWeeks, courseName, parsedName, parsedT
 	var splitTime = parsedTime.split('-'); //Split into start/end times
 	var startAMPM = splitTime[0].trim(); //Start time in AM/PM format
 	var startAMPMStr = startAMPM.match(/\s(.*)$/)[1];
-	var endAMPM = splitTime[1].trim(); 
+	var endAMPM = splitTime[1].trim();
 	var endAMPMStr = endAMPM.match(/\s(.*)$/)[1];
 	var start = {
-		hours: Number(startAMPM.match(/^(\d+)/)[1]), 
+		hours: Number(startAMPM.match(/^(\d+)/)[1]),
 		minutes: Number(startAMPM.match(/:(\d+)/)[1])
 	};
-	if(startAMPMStr == "PM" && start.hours < 12) {
+	if (startAMPMStr == "PM" && start.hours < 12) {
 		start.hours += 12;
 	}
-	if(startAMPMStr == "AM" && start.hours == 12) {
+	if (startAMPMStr == "AM" && start.hours == 12) {
 		start.hours = 0;
 	}
 	var end = {
-		hours: Number(endAMPM.match(/^(\d+)/)[1]), 
+		hours: Number(endAMPM.match(/^(\d+)/)[1]),
 		minutes: Number(endAMPM.match(/:(\d+)/)[1])
 	};
-	if(endAMPMStr == "PM" && end.hours < 12) {
+	if (endAMPMStr == "PM" && end.hours < 12) {
 		end.hours += 12;
 	}
-	if(endAMPMStr == "AM" && end.hours == 12) {
+	if (endAMPMStr == "AM" && end.hours == 12) {
 		end.hours = 0;
 	}
 
@@ -172,7 +191,7 @@ function createEvent(year, month, day, numWeeks, courseName, parsedName, parsedT
 	var endDateTime = new Date(year, month, day, end.hours, end.minutes);
 	//Calculate the correct starting date for each class depending on it's first meeting day.
 	//e.g. if a course meets Tuesday, we add one day to the original starting day (monday)
-	switch(parsedDays[0]){
+	switch (parsedDays[0]) {
 		case 'M':
 			break;
 		case 'T':
@@ -190,93 +209,106 @@ function createEvent(year, month, day, numWeeks, courseName, parsedName, parsedT
 		case 'F':
 			startDateTime.setDate(startDateTime.getDate() + 4);
 			endDateTime.setDate(endDateTime.getDate() + 4);
-			break;	
+			break;
 	}
 
 	//Date the event will run until (start date + numWeeks weeks)
 	var newDate = new Date(endDateTime.getFullYear(), endDateTime.getMonth(), endDateTime.getDate(), end.hours, end.minutes);
 
-	var untilDate = addDays(newDate, numWeeks*7);
+	var untilDate = addDays(newDate, numWeeks * 7);
 
 	var endMonth = untilDate.getMonth();
 	var endDay = untilDate.getDay();
-  	if(endMonth+1 < 10){
-		endMonth = "0" + "" + (endMonth+1);
+	if (endMonth + 1 < 10) {
+		endMonth = "0" + "" + (endMonth + 1);
 	}
-	else{
-		endMonth = endMonth+1;
+	else {
+		endMonth = endMonth + 1;
 	}
 	var endDay = untilDate.getDate();
-	if(endDay < 10){
+	if (endDay < 10) {
 		endDay = "0" + "" + endDay;
 	}
 	console.log(untilDate.getFullYear() + "" + endMonth + "" + endDay);
 	//Format the calendar event into a proper request
 	var event = {
-		 "kind": "calendar#event",
-	     "summary": courseName + " " + parsedName,
-		 "location": parsedLocation,
-		 "start": {
-		    "dateTime": startDateTime.toISOString(),
-	        'timeZone': 'America/Los_Angeles'
-		  },
-		 "end": {
-		   "dateTime": endDateTime.toISOString(),
-	       'timeZone': 'America/Los_Angeles'
-		 },
-		 "recurrence": [
-		   "RRULE:FREQ=WEEKLY;UNTIL=" + untilDate.getFullYear() + "" + endMonth + "" + endDay + ";BYDAY=" + days
-		 ],
+		"kind": "calendar#event",
+		"summary": courseName + " " + parsedName,
+		"location": parsedLocation,
+		"start": {
+			"dateTime": startDateTime.toISOString(),
+			'timeZone': 'America/Los_Angeles'
+		},
+		"end": {
+			"dateTime": endDateTime.toISOString(),
+			'timeZone': 'America/Los_Angeles'
+		},
+		"recurrence": [
+			"RRULE:FREQ=WEEKLY;UNTIL=" + untilDate.getFullYear() + "" + endMonth + "" + endDay + ";BYDAY=" + days
+		],
+		"colorId": "6",
+		"calendarId": "003b8d0be6116692bbce45fa9f75941673d7bd7538721e6ee824da784e196e22@group.calendar.google.com"
 	};
 	return event;
 }
 function addDays(date, days) {
- 	 var out = new Date(date.getTime());
- 	 out.setDate(date.getDate() + days);
- 	 return out;
- }
+	var out = new Date(date.getTime());
+	out.setDate(date.getDate() + days);
+	return out;
+}
 function numDays(year, month) {
 	return new Date(year, month, 0).getDate();
 }
-function exportToGoogle(eventArray) {
-
-	//Content scripts cannot use chrome.* API (for authorization), so send data to an event page
-	chrome.runtime.sendMessage(eventArray, function(response) {
+function exportToGoogle(eventArray, calendarId) {
+	console.log(eventArray)
+	// Content scripts cannot use chrome.* API (for authorization), so send data to a service worker
+	// chrome.runtime.sendMessage(eventArray, function(response) {
+	// 	if (response.success) {
+	// 		popupWindow.innerHTML = 'Calendar exported successfully.';
+	// 		exported = true;
+	// 	} else {
+	// 		popupWindow.innerHTML = 'Calendar export failed: ' + (response.error || 'Unknown error');
+	// 		exported = false;
+	// 		console.error("Export error:", response.error); // Log the error for debugging
+	// 	}
+	// });
+	const request = {"events": eventArray, "calendarId": calendarId };
+	chrome.runtime.sendMessage(request, function (response) {
 		popupWindow.innerHTML = 'Calendar exported.';
 		exported = true;
 	});
 }
 function toBYDAY(parsedDays) {
 	var days = "";
-	for(var i = 0; i < parsedDays.length; i++){
-		if(i != 0) {
+	for (var i = 0; i < parsedDays.length; i++) {
+		if (i != 0) {
 			days += ",";
 		}
-		switch(parsedDays[i]) {
+		switch (parsedDays[i]) {
 			case 'M':
-				days +="MO";
+				days += "MO";
 				break;
 			case 'T':
-				days +="TU";
+				days += "TU";
 				break;
 			case 'W':
-				days +="WE";
+				days += "WE";
 				break;
 			case 'R':
-				days +="TH";
+				days += "TH";
 				break;
 			case 'F':
-				days +="FR";
+				days += "FR";
 				break;
 		}
 	}
 	return days;
 }
 
-window.onresize = function(event) {
+window.onresize = function (event) {
 	console.log("resize");
-    parent = document.getElementsByClassName("menu active")[0];
-	if(!parent) {
+	parent = document.getElementsByClassName("menu active")[0];
+	if (!parent) {
 		parent = document.getElementsByClassName("menu active")[1];
 	}
 	parent.appendChild(div);
